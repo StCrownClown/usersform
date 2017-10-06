@@ -1,14 +1,8 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-
-var UsersData = {};
-
-localStorage.setItem('UsersData', UsersData);
-
-localStorage.getItem('UsersData');
+import React, { Component } from 'react'
+import ReactDOM from 'react-dom'
+import App from './App'
 
 ReactDOM.render(
-  <table id="table">
-  </table>,
-  document.getElementById('table')
-);
+  <App />,
+  document.getElementById('App')
+)
