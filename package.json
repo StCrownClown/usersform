@@ -1,7 +1,7 @@
 {
   "name": "usersform",
   "version": "1.0.0",
-  "description": "just for zanroo",
+  "description": "jfzr",
   "main": "index.js",
   "scripts": {
     "webpack-watch": "webpack -w",
