@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>A Web Page</title>
+  <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+  <style>
+    table {
+      color:#666;
+      background:#f5f5f5;
+    }
+    th {
+      background: #777;
+      color: #fff;
+      width: 150px;
+      text-shadow: 0 1px 0 #000;
+    }
+    td {
+    }
+    tr:nth-child(odd) td {
+      background: #e6e6e6;
+    }
+    button {
+      width: 75px;
+      shadow:  0 1px 0 #000;
+    }
+    tbody:hover tr:hover td {
+      color: #40ff00;
+      background: #bfbfbf;
+    }
+    tbody {
+      height: 400px;
+      overflow: auto;
+      width: 400px;
+    }
+  </style>
+</head>
+<body>
+  <div id="App"></div>
+  <script type="text/babel">
+
+  const colsHead = ['Name','Age','Nickname','Action']
+  let UsersData = []
+
+  if (localStorage.getItem('UsersDataLocal')) {
+    UsersData = JSON.parse(localStorage.getItem('UsersDataLocal'))
+  }
+  else {
+    UsersData = [
+      {userName: 'AAA', userAge: '11', userNickname: 'aa', Deleted: false},
+    ]
+    localStorage.setItem('UsersDataLocal', JSON.stringify(UsersData))
+  }
+
+  class TableHead extends React.Component {
+    render() {
+      const cols = []
+
+      colsHead.forEach((data) => {
+        cols.push(
+          <th key={data}>{data}</th>
+        )
+      })
+
+      return(
+        <thead>
+          <tr>{cols}</tr>
+        </thead>
+      )
+    }
+  }
+
+  class Create extends React.Component {
+    constructor(props) {
+      super(props)
+      this.state={
+        Cancel:false,
+        setName : UsersData.userName,
+        setAge: UsersData.userAge,
+        setNickname: UsersData.userNickname
+      }
+      this.onChange = this.onChange.bind(this)
+      this.saveChanges = this.saveChanges.bind(this)
+      this.toggleCancel = this.toggleCancel.bind(this)
+    }
+
+    onChange(event){
+      this.setState({
+        [event.target.name] : event.target.value
+      })
+    }
+
+    toggleCancel() {
+      this.setState({
+        Cancel: true
+      })
+    }
+
+    saveChanges(){
+      const {setName, setAge, setNickname} = this.state
+      this.toggleEditing()
+      this.props.saveChanges({
+        key: this.props.data.userName,
+        setName,
+        setAge,
+        setNickname
+      })
+    }
+
+    render() {
+      const {Cancel} = this.state
+      return(
+        <table>
+        <tbody>
+        <tr>
+        <td><AddInput type="text" name="setName"></AddInput></td>
+        <td><AddInput type="number" name="setAge"></AddInput></td>
+        <td><AddInput type="text" name="setNickname"></AddInput></td>
+        <td><button>Save</button>
+        <button onClick={this.toggleCancel}>Cancel</button>
+        </td>
+        </tr>
+        </tbody>
+        </table>
+      )
+    }
+  }
+
+  class AddInput extends React.Component {
+    render() {
+      const {value, onChange, name, type} = this.props
+      return (
+        <input type={type}
+        value={value}
+        onChange={onChange}
+        name={name}
+        />
+      )
+    }
+  }
+
+  class TextCell extends React.Component{
+    render() {
+      const {value, onChange, name} = this.props
+      return (
+        <td>
+        <input type="text"
+        value={value}
+        name={name}
+        readOnly
+        />
+        </td>
+      )
+    }
+  }
+
+  class TextInput extends React.Component {
+    render() {
+      const {defaultValue, onChange, name} = this.props
+      return (
+        <td>
+        <input type="text"
+        defaultValue={defaultValue}
+        onChange={onChange}
+        name={name}
+        />
+        </td>
+      )
+    }
+  }
+
+  class TableRow extends React.Component {
+
+    constructor(props) {
+      super(props)
+      this.state={
+        Editing:false,
+        setName : this.props.data.userName,
+        setAge: this.props.data.userAge,
+        setNickname: this.props.data.userNickname
+      }
+      this.toggleEditing = this.toggleEditing.bind(this)
+      this.onChange = this.onChange.bind(this)
+      this.saveChanges = this.saveChanges.bind(this)
+      this.Deleting = this.Deleting.bind(this)
+    }
+
+    toggleEditing() {
+      let Editing = !this.state.Editing
+      this.setState({
+        Editing: Editing
+      })
+      if (Editing == false) {
+        this.saveChanges()
+      }
+    }
+
+    onChange(event){
+      this.setState({
+        [event.target.name] : event.target.value
+      })
+    }
+
+    saveChanges(){
+      const {setName, setAge, setNickname} = this.state
+      this.props.saveChanges({
+        key: this.props.data.userName,
+        setName,
+        setAge,
+        setNickname
+      })
+      this.setState({
+        Editing: !this.state.Editing
+      })
+      // let userDataArray = []
+      // userDataArray = "["+JSON.stringify(this.state)+"]"
+      // console.log(JSON.stringify(UsersData))
+      // console.log(UsersData)
+      // localStorage.setItem('UsersDataLocal', UsersData)
+    }
+
+    Deleting(){
+      const confirm_clear = confirm('DELETE ?')
+      if (confirm_clear) {
+        this.props.Deleting(this.props.data.userName)
+      }
+    }
+
+    render() {
+      const {userName, userAge, userNickname} = this.props.data
+      const {Editing, setName, setAge, setNickname} = this.state
+      if (Editing) {
+        return (
+          <tr>
+          <TextInput defaultValue={setName} name="setName" onChange={this.onChange}></TextInput>
+          <TextInput defaultValue={setAge} name="setAge" onChange={this.onChange}></TextInput>
+          <TextInput defaultValue={setNickname} name="setNickname" onChange={this.onChange}></TextInput>
+          <td>
+          <button onClick={this.toggleEditing} >Edit</button>
+          <button onClick={this.Deleting} >Delete</button>
+          </td>
+          </tr>
+        )
+      }
+      else {
+        return (
+          <tr>
+          <TextCell value={userName} ></TextCell>
+          <TextCell value={userAge} ></TextCell>
+          <TextCell value={userNickname} ></TextCell>
+          <td>
+          <button onClick={this.toggleEditing}>Edit</button>
+          <button onClick={this.Deleting} >Delete</button>
+          </td>
+          </tr>
+        )
+      }
+    }
+  }
+
+  class Table extends React.Component {
+    constructor(props){
+      super(props)
+      this.state = {
+        UsersData: UsersData
+      }
+      this.saveChanges = this.saveChanges.bind(this)
+      this.Deleting = this.Deleting.bind(this)
+    }
+
+    Deleting(key){
+    	this.setState(prevState => ({
+        UsersData: prevState.UsersData.filter(data => {
+         return data.userName !== key
+        })
+      }))
+    }
+
+    saveChanges({key, setName, setAge, setNickname}){
+      console.log(UsersData)
+      this.setState(prevState => ({
+        UsersData: prevState.UsersData.map(data => {
+          if(data.userName === key)
+          return { userName: setName, userAge: setAge, userNickname: setNickname }
+          return data
+        })
+      }))
+    }
+
+    render() {
+      const rows = []
+      this.state.UsersData.forEach((data) => {
+        if (data['Deleted'] != true) {
+          rows.push (
+            <TableRow
+            key={data.userName}
+            saveChanges={this.saveChanges}
+            Deleting={this.Deleting}
+            data={data}
+            />
+          )
+        }
+      })
+
+      return (
+        <table>
+        <TableHead/>
+        <tbody>{rows}</tbody>
+        </table>
+      )
+    }
+  }
+
+  class App extends React.Component {
+    constructor(props) {
+      super(props)
+      this.state={
+        Adding:false,
+      }
+      this.setAdding = this.setAdding.bind(this)
+    }
+
+    setAdding() {
+      this.setState({
+        Adding: true
+      })
+    }
+    render() {
+      let Adding = this.state.Adding
+        return (
+          <div>
+          <Table UsersData={UsersData} />
+          { this.state.Adding ? <Create /> : null }
+          <button onClick={this.setAdding}>Add</button>
+          </div>
+        )
+    }
+  }
+
+  ReactDOM.render(
+    <App />,
+    document.getElementById('App')
+  )
+
+
+  </script>
+</body>
+</html>
