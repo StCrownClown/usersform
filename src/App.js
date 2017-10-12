@@ -9,12 +9,27 @@ if (localStorage.getItem('UsersDataLocal')) {
 }
 else {
   UsersData = [
-    {userName: 'AAA', userAge: '11', userNickname: 'aa', Deleted: false},
+    {userName: 'TEST', userAge: '1', userNickname: 'A'},
   ]
   localStorage.setItem('UsersDataLocal', JSON.stringify(UsersData))
 }
 
-class TableHead extends Component {
+function SaveLocalStorage(userDataArray, todo) {
+  if (todo == 'delete') {
+    localStorage.setItem('UsersDataLocal', JSON.stringify(userDataArray))
+  }
+  else if (todo == 'edit') {
+    localStorage.setItem('UsersDataLocal', JSON.stringify(userDataArray))
+  }
+  else if (todo == 'new') {
+    if (JSON.parse(localStorage.getItem('UsersDataLocal')) == null) {let addNew = []}
+    let addNew = JSON.parse(localStorage.getItem('UsersDataLocal'))
+    addNew.push(userDataArray)
+    localStorage.setItem('UsersDataLocal', JSON.stringify(addNew))
+  }
+}
+
+class TableHead extends React.Component {
   render() {
     const cols = []
 
@@ -26,20 +41,19 @@ class TableHead extends Component {
 
     return(
       <thead>
-      <tr>{cols}</tr>
+        <tr>{cols}</tr>
       </thead>
     )
   }
 }
 
-class Create extends Component {
+class Create extends React.Component {
   constructor(props) {
     super(props)
     this.state={
-      Cancel:false,
-      setName : '',
-      setAge: '',
-      setNickname: ''
+      userName : '',
+      userAge: '',
+      userNickname: ''
     }
     this.initialState = this.state
     this.onChange = this.onChange.bind(this)
@@ -55,39 +69,36 @@ class Create extends Component {
 
   toggleCancel() {
     this.setState({
-      Cancel: true
-    })
-    this.setState({
-      Cancel:false,
-      setName : '',
-      setAge: '',
-      setNickname: ''
+      userName : '',
+      userAge: '',
+      userNickname: ''
     })
   }
 
   saveNewRow(){
-    const {setName, setAge, setNickname} = this.state
-    this.props.addNewRow({ setName, setAge, setNickname })
+    const {userName, userAge, userNickname} = this.state
+    this.props.addNewRow({ userName, userAge, userNickname })
     this.setState(this.initialState)
+    console.log('Table.saveNewRow')
     console.log(this.state)
-    // userDataArray = "["+JSON.stringify(this.state)+"]"
-    // console.log(JSON.stringify(userDataArray))
+    let userDataArray = this.state
+    let todo = 'new'
+    SaveLocalStorage(userDataArray, todo)
   }
 
   render() {
-    const {Cancel} = this.state
     return(
       <table>
-      <tbody>
-      <tr>
-      <td><AddInput type="text" name="setName" value={this.state.setName} onChange={this.onChange} ></AddInput></td>
-      <td><AddInput type="number" name="setAge" value={this.state.setAge} onChange={this.onChange}></AddInput></td>
-      <td><AddInput type="text" name="setNickname" value={this.state.setNickname} onChange={this.onChange}></AddInput></td>
-      <td><button onClick={this.saveNewRow}>Save</button>
-      <button onClick={this.toggleCancel}>Cancel</button>
-      </td>
-      </tr>
-      </tbody>
+        <tbody>
+          <tr>
+          <td><AddInput type='text' name='userName' value={this.state.userName} onChange={this.onChange} ></AddInput></td>
+          <td><AddInput type='number' name='userAge' value={this.state.userAge} onChange={this.onChange} min='1' max='150'>></AddInput></td>
+          <td><AddInput type='text' name='userNickname' value={this.state.userNickname} onChange={this.onChange}></AddInput></td>
+          <td><button onClick={this.saveNewRow}>Save</button>
+          <button onClick={this.toggleCancel}>Cancel</button>
+          </td>
+          </tr>
+        </tbody>
       </table>
     )
   }
@@ -95,213 +106,228 @@ class Create extends Component {
 
 class AddInput extends React.Component {
   render() {
-    const {value, onChange, name, type} = this.props
+    const {value, onChange, name, type, min, max} = this.props
     return (
       <input type={type}
-      value={value}
-      onChange={onChange}
-      name={name}
+        value={value}
+        onChange={onChange}
+        name={name}
+        min={min}
+        max={max}
       />
     )
   }
 }
 
-class TextCell extends Component {
+class TextCell extends React.Component {
   render() {
-    const {defaultValue, onChange, name, type, value, Editing} = this.props
-    if (Editing) {
+    const {defaultValue, onChange, name, type, value, Edit, min, max} = this.props
+    if (Edit) {
       return (
         <td>
-        <input type={type}
-        defaultValue={defaultValue}
-        onChange={onChange}
-        name={name}
-        />
+          <input type={type}
+            defaultValue={defaultValue}
+            onChange={onChange}
+            name={name}
+            min={min}
+            max={max}
+            />
         </td>
       )}
-    else {
+      else {
+        return (
+          <td>{value}</td>
+        )
+      }
+    }
+  }
+
+  class TableRow extends React.Component {
+
+    constructor(props) {
+      super(props)
+      this.state={
+        Edit: false,
+        userName : this.props.data.userName,
+        userAge: this.props.data.userAge,
+        userNickname: this.props.data.userNickname
+      }
+      this.toggleEdit = this.toggleEdit.bind(this)
+      this.setCancel = this.setCancel.bind(this)
+      this.onChange = this.onChange.bind(this)
+      this.saveChanges = this.saveChanges.bind(this)
+      this.Deleting = this.Deleting.bind(this)
+    }
+
+    toggleEdit() {
+      let Edit = !this.state.Edit
+      this.setState({
+        Edit: Edit
+      })
+      if (Edit == false) {
+        this.saveChanges()
+      }
+    }
+
+    onChange(event){
+      this.setState({
+        [event.target.name] : event.target.value
+      })
+    }
+
+    setCancel() {
+      this.setState({
+        Edit: false,
+      })
+    }
+
+    saveChanges(){
+      const {userName, userAge, userNickname} = this.state
+      this.props.saveChanges({
+        key: this.props.data.userName,
+        userName,
+        userAge,
+        userNickname
+      })
+      this.setState({
+        Edit: false
+      })
+      console.log('TableRow.saveChanges')
+      console.log(UsersData)
+      for (let val in UsersData) {
+        if (this.props.data == UsersData[val]) {
+          UsersData[val] = this.state
+        }
+      }
+      let userDataArray = UsersData
+      let todo = 'edit'
+      SaveLocalStorage(userDataArray, todo)
+    }
+
+    Deleting(){
+      const confirm_clear = confirm('DELETE ?')
+      if (confirm_clear) {
+        this.props.Deleting(this.props.data.userName)
+      }
+    }
+
+    render() {
+      const {Edit, userName, userAge, userNickname} = this.state
       return (
-        <td>
-        {value}
-        </td>
+        <tr>
+          <TextCell type='text' defaultValue={userName} value={userName} name='userName' onChange={this.onChange} Edit={Edit}></TextCell>
+          <TextCell type='number' defaultValue={userAge} value={userAge} name='userAge' onChange={this.onChange} Edit={Edit} min='1' max='150'>></TextCell>
+          <TextCell type='text' defaultValue={userNickname} value={userNickname} name='userNickname' onChange={this.onChange} Edit={Edit}></TextCell>
+          <td>
+            <button onClick={this.toggleEdit} >Edit</button>
+            { this.state.Edit ? <button onClick={this.setCancel} >Cancel</button> : <button onClick={this.Deleting} >Delete</button> }
+          </td>
+        </tr>
       )
     }
   }
-}
 
-class TableRow extends Component {
-
-  constructor(props) {
-    super(props)
-    this.state={
-      Editing: false,
-      Cancal: false,
-      setName : this.props.data.userName,
-      setAge: this.props.data.userAge,
-      setNickname: this.props.data.userNickname
-    }
-    this.toggleEditing = this.toggleEditing.bind(this)
-    this.setCancel = this.setCancel.bind(this)
-    this.onChange = this.onChange.bind(this)
-    this.saveChanges = this.saveChanges.bind(this)
-    this.Deleting = this.Deleting.bind(this)
-  }
-
-  toggleEditing() {
-    let Editing = !this.state.Editing
-    this.setState({
-      Editing: Editing
-    })
-    if (Editing == false) {
-      this.saveChanges()
-    }
-  }
-
-  onChange(event){
-    this.setState({
-      [event.target.name] : event.target.value
-    })
-  }
-
-  setCancel() {
-    this.setState({
-      Cancel: true,
-      Editing: false,
-    })
-  }
-
-  saveChanges(){
-    const {setName, setAge, setNickname} = this.state
-    this.props.saveChanges({
-      key: this.props.data.userName,
-      setName,
-      setAge,
-      setNickname
-    })
-    this.setState({
-      Editing: false
-    })
-    console.log(this.state)
-    // userDataArray = "["+JSON.stringify(this.state)+"]"
-    // console.log(JSON.stringify(userDataArray))
-  }
-
-  Deleting(){
-    const confirm_clear = confirm('DELETE ?')
-    if (confirm_clear) {
-      this.props.Deleting(this.props.data.userName)
-    }
-    console.log(this.state)
-    // userDataArray = "["+JSON.stringify(this.state)+"]"
-    // console.log(JSON.stringify(userDataArray))
-  }
-
-  render() {
-    const {userName, userAge, userNickname} = this.props.data
-    const {Editing, setName, setAge, setNickname} = this.state
-    return (
-      <tr>
-      <TextCell type="text" defaultValue={setName} value={userName} name="setName" onChange={this.onChange} Editing={Editing}></TextCell>
-      <TextCell type="number" defaultValue={setAge} value={userAge} name="setAge" onChange={this.onChange} Editing={Editing}></TextCell>
-      <TextCell type="text" defaultValue={setNickname} value={userNickname} name="setNickname" onChange={this.onChange} Editing={Editing}></TextCell>
-      <td>
-      <button onClick={this.toggleEditing} >Edit</button>
-      { this.state.Editing ? <button onClick={this.setCancel} >Cancel</button> : <button onClick={this.Deleting} >Delete</button> }
-      </td>
-      </tr>
-    )
-  }
-}
-
-class Table extends Component {
-  constructor(props){
-    super(props)
-    this.state = {
-      UsersData: UsersData,
-      Adding:false,
-    }
-    this.Deleting = this.Deleting.bind(this)
-    this.addNewRow = this.addNewRow.bind(this)
-    this.setAdding = this.setAdding.bind(this)
-    this.saveChanges = this.saveChanges.bind(this)
-  }
-
-  Deleting(key){
-    this.setState(prevState => ({
-      UsersData: prevState.UsersData.filter(data => {
-        return data.userName !== key
-      })
-    }))
-    console.log(this.state)
-    // userDataArray = "["+JSON.stringify(this.state)+"]"
-    // console.log(JSON.stringify(userDataArray))
-  }
-
-  addNewRow({setName,setAge, setNickname }) {
-    this.setState(prevState => ({
-      UsersData: prevState.UsersData.concat([{userName: setName, userAge: setAge, userNickname: setNickname}])
-    }))
-    console.log(this.state)
-    // userDataArray = "["+JSON.stringify(this.state)+"]"
-    // console.log(JSON.stringify(userDataArray))
-  }
-
-  setAdding() {
-    let Adding = !this.state.Adding
-    this.setState({
-      Adding: Adding
-    })
-  }
-
-  saveChanges({key, setName, setAge, setNickname}){
-    this.setState(prevState => ({
-      UsersData: prevState.UsersData.map(data => {
-        if(data.userName === key)
-        return { userName: setName, userAge: setAge, userNickname: setNickname }
-        return data
-      })
-    }))
-    console.log(this.state)
-    // userDataArray = "["+JSON.stringify(this.state)+"]"
-    // console.log(JSON.stringify(userDataArray))
-  }
-
-  render() {
-    const rows = []
-    this.state.UsersData.forEach((data) => {
-      if (data['Deleted'] != true) {
-        rows.push (
-          <TableRow
-          key={data.userName}
-          saveChanges={this.saveChanges}
-          Deleting={this.Deleting}
-          data={data}
-          />
-        )
+  class Table extends React.Component {
+    constructor(props){
+      super(props)
+      this.state = {
+        UsersData: UsersData,
+        Add:false,
       }
-    })
+      this.Deleting = this.Deleting.bind(this)
+      this.addNewRow = this.addNewRow.bind(this)
+      this.setAdd = this.setAdd.bind(this)
+      this.saveChanges = this.saveChanges.bind(this)
+    }
 
-    return (
-      <div>
-      <table>
-      <TableHead/>
-      <tbody>{rows}</tbody>
-      </table>
-      { this.state.Adding ? <Create addNewRow={this.addNewRow} /> : null }
-      <button onClick={this.setAdding}>Add</button>
-      </div>
-    )
+    Deleting(data, key){
+      this.setState(prevState => ({
+        UsersData: prevState.UsersData.filter(data => {
+          if (data !== null) {
+            return data.userName !== key
+          }
+        })
+      }))
+      for (let val in UsersData) {
+        if (UsersData[val] !== null) {
+          if (UsersData.hasOwnProperty(val) && UsersData[val].userName == data) {
+            console.log(val)
+            Array.prototype.remove = function(val){
+              this.splice(val,1);
+            }
+            UsersData.remove(val)
+          }
+        }
+      }
+      console.log('Table.Deleting')
+      console.log(UsersData)
+      let userDataArray = UsersData
+      let todo = 'delete'
+      SaveLocalStorage(userDataArray, todo)
+    }
+
+    addNewRow({userName,userAge, userNickname }) {
+      this.setState(prevState => ({
+        UsersData: prevState.UsersData.concat([{userName: userName, userAge: userAge, userNickname: userNickname}])
+      }))
+    }
+
+    setAdd() {
+      let Add = !this.state.Add
+      this.setState({
+        Add: Add
+      })
+    }
+
+    saveChanges({key, userName, userAge, userNickname}){
+      this.setState(prevState => ({
+        UsersData: prevState.UsersData.map(data => {
+          if (data !== null) {
+            if(data.userName === key && data !== null)
+              return { userName: userName, userAge: userAge, userNickname: userNickname }
+              return data
+          }
+          return data
+        })
+      }))
+    }
+
+    render() {
+      const rows = []
+      this.state.UsersData.forEach((data) => {
+        if (data !== null) {
+          rows.push (
+            <TableRow
+              key={data.userName}
+              saveChanges={this.saveChanges}
+              Deleting={this.Deleting}
+              data={data}
+              />
+          )
+        }
+      })
+
+      return (
+        <div>
+          <table>
+            <TableHead/>
+            <tbody>{rows}</tbody>
+          </table>
+          { this.state.Add ? <Create addNewRow={this.addNewRow} /> : null }
+          <button onClick={this.setAdd}>Add</button>
+        </div>
+      )
+    }
   }
-}
 
-class App extends Component {
-  render() {
-    return (
-      <div>
-      <Table />
-      </div>
-    )
+  class App extends React.Component {
+    render() {
+      return (
+        <div>
+          <Table />
+        </div>
+      )
+    }
   }
-}
 
-export default App
+  export default App

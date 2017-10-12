@@ -21920,12 +21920,27 @@ var UsersData = [];
 if (localStorage.getItem('UsersDataLocal')) {
   UsersData = JSON.parse(localStorage.getItem('UsersDataLocal'));
 } else {
-  UsersData = [{ userName: 'AAA', userAge: '11', userNickname: 'aa', Deleted: false }];
+  UsersData = [{ userName: 'TEST', userAge: '1', userNickname: 'A' }];
   localStorage.setItem('UsersDataLocal', (0, _stringify2.default)(UsersData));
 }
 
-var TableHead = function (_Component) {
-  (0, _inherits3.default)(TableHead, _Component);
+function SaveLocalStorage(userDataArray, todo) {
+  if (todo == 'delete') {
+    localStorage.setItem('UsersDataLocal', (0, _stringify2.default)(userDataArray));
+  } else if (todo == 'edit') {
+    localStorage.setItem('UsersDataLocal', (0, _stringify2.default)(userDataArray));
+  } else if (todo == 'new') {
+    if (JSON.parse(localStorage.getItem('UsersDataLocal')) == null) {
+      var _addNew = [];
+    }
+    var addNew = JSON.parse(localStorage.getItem('UsersDataLocal'));
+    addNew.push(userDataArray);
+    localStorage.setItem('UsersDataLocal', (0, _stringify2.default)(addNew));
+  }
+}
+
+var TableHead = function (_React$Component) {
+  (0, _inherits3.default)(TableHead, _React$Component);
 
   function TableHead() {
     (0, _classCallCheck3.default)(this, TableHead);
@@ -21957,10 +21972,10 @@ var TableHead = function (_Component) {
     }
   }]);
   return TableHead;
-}(_react.Component);
+}(_react2.default.Component);
 
-var Create = function (_Component2) {
-  (0, _inherits3.default)(Create, _Component2);
+var Create = function (_React$Component2) {
+  (0, _inherits3.default)(Create, _React$Component2);
 
   function Create(props) {
     (0, _classCallCheck3.default)(this, Create);
@@ -21968,10 +21983,9 @@ var Create = function (_Component2) {
     var _this2 = (0, _possibleConstructorReturn3.default)(this, (Create.__proto__ || (0, _getPrototypeOf2.default)(Create)).call(this, props));
 
     _this2.state = {
-      Cancel: false,
-      setName: '',
-      setAge: '',
-      setNickname: ''
+      userName: '',
+      userAge: '',
+      userNickname: ''
     };
     _this2.initialState = _this2.state;
     _this2.onChange = _this2.onChange.bind(_this2);
@@ -21989,34 +22003,30 @@ var Create = function (_Component2) {
     key: 'toggleCancel',
     value: function toggleCancel() {
       this.setState({
-        Cancel: true
-      });
-      this.setState({
-        Cancel: false,
-        setName: '',
-        setAge: '',
-        setNickname: ''
+        userName: '',
+        userAge: '',
+        userNickname: ''
       });
     }
   }, {
     key: 'saveNewRow',
     value: function saveNewRow() {
       var _state = this.state,
-          setName = _state.setName,
-          setAge = _state.setAge,
-          setNickname = _state.setNickname;
+          userName = _state.userName,
+          userAge = _state.userAge,
+          userNickname = _state.userNickname;
 
-      this.props.addNewRow({ setName: setName, setAge: setAge, setNickname: setNickname });
+      this.props.addNewRow({ userName: userName, userAge: userAge, userNickname: userNickname });
       this.setState(this.initialState);
+      console.log('Table.saveNewRow');
       console.log(this.state);
-      // userDataArray = "["+JSON.stringify(this.state)+"]"
-      // console.log(JSON.stringify(userDataArray))
+      var userDataArray = this.state;
+      var todo = 'new';
+      SaveLocalStorage(userDataArray, todo);
     }
   }, {
     key: 'render',
     value: function render() {
-      var Cancel = this.state.Cancel;
-
       return _react2.default.createElement(
         'table',
         null,
@@ -22029,17 +22039,21 @@ var Create = function (_Component2) {
             _react2.default.createElement(
               'td',
               null,
-              _react2.default.createElement(AddInput, { type: 'text', name: 'setName', value: this.state.setName, onChange: this.onChange })
+              _react2.default.createElement(AddInput, { type: 'text', name: 'userName', value: this.state.userName, onChange: this.onChange })
             ),
             _react2.default.createElement(
               'td',
               null,
-              _react2.default.createElement(AddInput, { type: 'number', name: 'setAge', value: this.state.setAge, onChange: this.onChange })
+              _react2.default.createElement(
+                AddInput,
+                { type: 'number', name: 'userAge', value: this.state.userAge, onChange: this.onChange, min: '1', max: '150' },
+                '>'
+              )
             ),
             _react2.default.createElement(
               'td',
               null,
-              _react2.default.createElement(AddInput, { type: 'text', name: 'setNickname', value: this.state.setNickname, onChange: this.onChange })
+              _react2.default.createElement(AddInput, { type: 'text', name: 'userNickname', value: this.state.userNickname, onChange: this.onChange })
             ),
             _react2.default.createElement(
               'td',
@@ -22061,10 +22075,10 @@ var Create = function (_Component2) {
     }
   }]);
   return Create;
-}(_react.Component);
+}(_react2.default.Component);
 
-var AddInput = function (_React$Component) {
-  (0, _inherits3.default)(AddInput, _React$Component);
+var AddInput = function (_React$Component3) {
+  (0, _inherits3.default)(AddInput, _React$Component3);
 
   function AddInput() {
     (0, _classCallCheck3.default)(this, AddInput);
@@ -22078,20 +22092,24 @@ var AddInput = function (_React$Component) {
           value = _props.value,
           onChange = _props.onChange,
           name = _props.name,
-          type = _props.type;
+          type = _props.type,
+          min = _props.min,
+          max = _props.max;
 
       return _react2.default.createElement('input', { type: type,
         value: value,
         onChange: onChange,
-        name: name
+        name: name,
+        min: min,
+        max: max
       });
     }
   }]);
   return AddInput;
 }(_react2.default.Component);
 
-var TextCell = function (_Component3) {
-  (0, _inherits3.default)(TextCell, _Component3);
+var TextCell = function (_React$Component4) {
+  (0, _inherits3.default)(TextCell, _React$Component4);
 
   function TextCell() {
     (0, _classCallCheck3.default)(this, TextCell);
@@ -22107,16 +22125,20 @@ var TextCell = function (_Component3) {
           name = _props2.name,
           type = _props2.type,
           value = _props2.value,
-          Editing = _props2.Editing;
+          Edit = _props2.Edit,
+          min = _props2.min,
+          max = _props2.max;
 
-      if (Editing) {
+      if (Edit) {
         return _react2.default.createElement(
           'td',
           null,
           _react2.default.createElement('input', { type: type,
             defaultValue: defaultValue,
             onChange: onChange,
-            name: name
+            name: name,
+            min: min,
+            max: max
           })
         );
       } else {
@@ -22129,10 +22151,10 @@ var TextCell = function (_Component3) {
     }
   }]);
   return TextCell;
-}(_react.Component);
+}(_react2.default.Component);
 
-var TableRow = function (_Component4) {
-  (0, _inherits3.default)(TableRow, _Component4);
+var TableRow = function (_React$Component5) {
+  (0, _inherits3.default)(TableRow, _React$Component5);
 
   function TableRow(props) {
     (0, _classCallCheck3.default)(this, TableRow);
@@ -22140,13 +22162,12 @@ var TableRow = function (_Component4) {
     var _this5 = (0, _possibleConstructorReturn3.default)(this, (TableRow.__proto__ || (0, _getPrototypeOf2.default)(TableRow)).call(this, props));
 
     _this5.state = {
-      Editing: false,
-      Cancal: false,
-      setName: _this5.props.data.userName,
-      setAge: _this5.props.data.userAge,
-      setNickname: _this5.props.data.userNickname
+      Edit: false,
+      userName: _this5.props.data.userName,
+      userAge: _this5.props.data.userAge,
+      userNickname: _this5.props.data.userNickname
     };
-    _this5.toggleEditing = _this5.toggleEditing.bind(_this5);
+    _this5.toggleEdit = _this5.toggleEdit.bind(_this5);
     _this5.setCancel = _this5.setCancel.bind(_this5);
     _this5.onChange = _this5.onChange.bind(_this5);
     _this5.saveChanges = _this5.saveChanges.bind(_this5);
@@ -22155,13 +22176,13 @@ var TableRow = function (_Component4) {
   }
 
   (0, _createClass3.default)(TableRow, [{
-    key: 'toggleEditing',
-    value: function toggleEditing() {
-      var Editing = !this.state.Editing;
+    key: 'toggleEdit',
+    value: function toggleEdit() {
+      var Edit = !this.state.Edit;
       this.setState({
-        Editing: Editing
+        Edit: Edit
       });
-      if (Editing == false) {
+      if (Edit == false) {
         this.saveChanges();
       }
     }
@@ -22174,30 +22195,36 @@ var TableRow = function (_Component4) {
     key: 'setCancel',
     value: function setCancel() {
       this.setState({
-        Cancel: true,
-        Editing: false
+        Edit: false
       });
     }
   }, {
     key: 'saveChanges',
     value: function saveChanges() {
       var _state2 = this.state,
-          setName = _state2.setName,
-          setAge = _state2.setAge,
-          setNickname = _state2.setNickname;
+          userName = _state2.userName,
+          userAge = _state2.userAge,
+          userNickname = _state2.userNickname;
 
       this.props.saveChanges({
         key: this.props.data.userName,
-        setName: setName,
-        setAge: setAge,
-        setNickname: setNickname
+        userName: userName,
+        userAge: userAge,
+        userNickname: userNickname
       });
       this.setState({
-        Editing: false
+        Edit: false
       });
-      console.log(this.state);
-      // userDataArray = "["+JSON.stringify(this.state)+"]"
-      // console.log(JSON.stringify(userDataArray))
+      console.log('TableRow.saveChanges');
+      console.log(UsersData);
+      for (var val in UsersData) {
+        if (this.props.data == UsersData[val]) {
+          UsersData[val] = this.state;
+        }
+      }
+      var userDataArray = UsersData;
+      var todo = 'edit';
+      SaveLocalStorage(userDataArray, todo);
     }
   }, {
     key: 'Deleting',
@@ -22206,38 +22233,35 @@ var TableRow = function (_Component4) {
       if (confirm_clear) {
         this.props.Deleting(this.props.data.userName);
       }
-      console.log(this.state);
-      // userDataArray = "["+JSON.stringify(this.state)+"]"
-      // console.log(JSON.stringify(userDataArray))
     }
   }, {
     key: 'render',
     value: function render() {
-      var _props$data = this.props.data,
-          userName = _props$data.userName,
-          userAge = _props$data.userAge,
-          userNickname = _props$data.userNickname;
       var _state3 = this.state,
-          Editing = _state3.Editing,
-          setName = _state3.setName,
-          setAge = _state3.setAge,
-          setNickname = _state3.setNickname;
+          Edit = _state3.Edit,
+          userName = _state3.userName,
+          userAge = _state3.userAge,
+          userNickname = _state3.userNickname;
 
       return _react2.default.createElement(
         'tr',
         null,
-        _react2.default.createElement(TextCell, { type: 'text', defaultValue: setName, value: userName, name: 'setName', onChange: this.onChange, Editing: Editing }),
-        _react2.default.createElement(TextCell, { type: 'number', defaultValue: setAge, value: userAge, name: 'setAge', onChange: this.onChange, Editing: Editing }),
-        _react2.default.createElement(TextCell, { type: 'text', defaultValue: setNickname, value: userNickname, name: 'setNickname', onChange: this.onChange, Editing: Editing }),
+        _react2.default.createElement(TextCell, { type: 'text', defaultValue: userName, value: userName, name: 'userName', onChange: this.onChange, Edit: Edit }),
+        _react2.default.createElement(
+          TextCell,
+          { type: 'number', defaultValue: userAge, value: userAge, name: 'userAge', onChange: this.onChange, Edit: Edit, min: '1', max: '150' },
+          '>'
+        ),
+        _react2.default.createElement(TextCell, { type: 'text', defaultValue: userNickname, value: userNickname, name: 'userNickname', onChange: this.onChange, Edit: Edit }),
         _react2.default.createElement(
           'td',
           null,
           _react2.default.createElement(
             'button',
-            { onClick: this.toggleEditing },
+            { onClick: this.toggleEdit },
             'Edit'
           ),
-          this.state.Editing ? _react2.default.createElement(
+          this.state.Edit ? _react2.default.createElement(
             'button',
             { onClick: this.setCancel },
             'Cancel'
@@ -22251,10 +22275,10 @@ var TableRow = function (_Component4) {
     }
   }]);
   return TableRow;
-}(_react.Component);
+}(_react2.default.Component);
 
-var Table = function (_Component5) {
-  (0, _inherits3.default)(Table, _Component5);
+var Table = function (_React$Component6) {
+  (0, _inherits3.default)(Table, _React$Component6);
 
   function Table(props) {
     (0, _classCallCheck3.default)(this, Table);
@@ -22263,72 +22287,84 @@ var Table = function (_Component5) {
 
     _this6.state = {
       UsersData: UsersData,
-      Adding: false
+      Add: false
     };
     _this6.Deleting = _this6.Deleting.bind(_this6);
     _this6.addNewRow = _this6.addNewRow.bind(_this6);
-    _this6.setAdding = _this6.setAdding.bind(_this6);
+    _this6.setAdd = _this6.setAdd.bind(_this6);
     _this6.saveChanges = _this6.saveChanges.bind(_this6);
     return _this6;
   }
 
   (0, _createClass3.default)(Table, [{
     key: 'Deleting',
-    value: function Deleting(key) {
+    value: function Deleting(data, key) {
       this.setState(function (prevState) {
         return {
           UsersData: prevState.UsersData.filter(function (data) {
-            return data.userName !== key;
+            if (data !== null) {
+              return data.userName !== key;
+            }
           })
         };
       });
-      console.log(this.state);
-      // userDataArray = "["+JSON.stringify(this.state)+"]"
-      // console.log(JSON.stringify(userDataArray))
+      for (var val in UsersData) {
+        if (UsersData[val] !== null) {
+          if (UsersData.hasOwnProperty(val) && UsersData[val].userName == data) {
+            console.log(val);
+            Array.prototype.remove = function (val) {
+              this.splice(val, 1);
+            };
+            UsersData.remove(val);
+          }
+        }
+      }
+      console.log('Table.Deleting');
+      console.log(UsersData);
+      var userDataArray = UsersData;
+      var todo = 'delete';
+      SaveLocalStorage(userDataArray, todo);
     }
   }, {
     key: 'addNewRow',
     value: function addNewRow(_ref) {
-      var setName = _ref.setName,
-          setAge = _ref.setAge,
-          setNickname = _ref.setNickname;
+      var userName = _ref.userName,
+          userAge = _ref.userAge,
+          userNickname = _ref.userNickname;
 
       this.setState(function (prevState) {
         return {
-          UsersData: prevState.UsersData.concat([{ userName: setName, userAge: setAge, userNickname: setNickname }])
+          UsersData: prevState.UsersData.concat([{ userName: userName, userAge: userAge, userNickname: userNickname }])
         };
       });
-      console.log(this.state);
-      // userDataArray = "["+JSON.stringify(this.state)+"]"
-      // console.log(JSON.stringify(userDataArray))
     }
   }, {
-    key: 'setAdding',
-    value: function setAdding() {
-      var Adding = !this.state.Adding;
+    key: 'setAdd',
+    value: function setAdd() {
+      var Add = !this.state.Add;
       this.setState({
-        Adding: Adding
+        Add: Add
       });
     }
   }, {
     key: 'saveChanges',
     value: function saveChanges(_ref2) {
       var key = _ref2.key,
-          setName = _ref2.setName,
-          setAge = _ref2.setAge,
-          setNickname = _ref2.setNickname;
+          userName = _ref2.userName,
+          userAge = _ref2.userAge,
+          userNickname = _ref2.userNickname;
 
       this.setState(function (prevState) {
         return {
           UsersData: prevState.UsersData.map(function (data) {
-            if (data.userName === key) return { userName: setName, userAge: setAge, userNickname: setNickname };
+            if (data !== null) {
+              if (data.userName === key && data !== null) return { userName: userName, userAge: userAge, userNickname: userNickname };
+              return data;
+            }
             return data;
           })
         };
       });
-      console.log(this.state);
-      // userDataArray = "["+JSON.stringify(this.state)+"]"
-      // console.log(JSON.stringify(userDataArray))
     }
   }, {
     key: 'render',
@@ -22337,7 +22373,7 @@ var Table = function (_Component5) {
 
       var rows = [];
       this.state.UsersData.forEach(function (data) {
-        if (data['Deleted'] != true) {
+        if (data !== null) {
           rows.push(_react2.default.createElement(TableRow, {
             key: data.userName,
             saveChanges: _this7.saveChanges,
@@ -22360,20 +22396,20 @@ var Table = function (_Component5) {
             rows
           )
         ),
-        this.state.Adding ? _react2.default.createElement(Create, { addNewRow: this.addNewRow }) : null,
+        this.state.Add ? _react2.default.createElement(Create, { addNewRow: this.addNewRow }) : null,
         _react2.default.createElement(
           'button',
-          { onClick: this.setAdding },
+          { onClick: this.setAdd },
           'Add'
         )
       );
     }
   }]);
   return Table;
-}(_react.Component);
+}(_react2.default.Component);
 
-var App = function (_Component6) {
-  (0, _inherits3.default)(App, _Component6);
+var App = function (_React$Component7) {
+  (0, _inherits3.default)(App, _React$Component7);
 
   function App() {
     (0, _classCallCheck3.default)(this, App);
@@ -22391,7 +22427,7 @@ var App = function (_Component6) {
     }
   }]);
   return App;
-}(_react.Component);
+}(_react2.default.Component);
 
 exports.default = App;
 
